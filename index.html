@@ -226,7 +226,7 @@
             <span class="cerrar" onclick="cerrarPago()">×</span>
             <h3>Métodos de Pago</h3>
             <p><strong>Yape / Plin:</strong> 912345678</p>
-            <img class="qr" src="qr.jpeg" alt="QR de pago" />
+            <img class="qr" src="QR.jpeg" alt="QR de pago" />
             <p><strong style="color:rgba(0, 0, 0, 0.432);"> PayPal: No Disponible  </strong> </p>
             <p><strong>Ubicación del producto:</strong> Paiján</p>
             <p><strong style="color:rgb(0, 0, 0);">Confirmación por WhatsApp:</strong></p>
@@ -271,18 +271,19 @@
     <!-- Firebase SDK -->
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"; import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"; const firebaseConfig = { apiKey: "TU_API_KEY_REAL",
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"; import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"; const firebaseConfig = { apiKey: "AIzaSyCCDSrE_hWvYYgjNwTX85leeU3vHBLBJsY",
         authDomain: "stylishsteps-10fc4.firebaseapp.com", databaseURL: "https://stylishsteps-10fc4-default-rtdb.firebaseio.com", projectId: "stylishsteps-10fc4", storageBucket: "stylishsteps-10fc4.firebasestorage.app", messagingSenderId: "32645603346",
-        appId: "1:32645603346:web:ae022c525a85aaf7ad38cb" }; const app = initializeApp(firebaseConfig); const db = getDatabase(app); const productosRef = ref(db, "productos"); onValue(productosRef, (snapshot) => { const contenedor = document.getElementById("vistaProductos");
-        contenedor.innerHTML = ""; snapshot.forEach((childSnapshot) => { const p = childSnapshot.val(); const div = document.createElement("div"); div.className = "producto"; const agotado = p.cantidad
+        appId: "1:32645603346:web:ae022c525a85aaf7ad38cb", measurementId: "G-369VZP753G" }; const app = initializeApp(firebaseConfig); const db = getDatabase(app); const productosRef = ref(db, "productos"); onValue(productosRef, (snapshot) => { const
+        contenedor = document.getElementById("vistaProductos"); contenedor.innerHTML = ""; snapshot.forEach((childSnapshot) => { const p = childSnapshot.val(); const div = document.createElement("div"); div.className = "producto"; const agotado = p.cantidad
         <=0 ? `<div class="agotado">NO DISPONIBLE</div>` : ""; const oferta = p.descuento > 0 ? `
             <div class="etiqueta-oferta">${p.descuento}% OFF</div>` : ""; const precioHTML = p.descuento > 0 ? `
-            <p><span style="text-decoration: line-through; color: gray">${p.precio} $</span><br><strong style="color: orange;">${p.precioFinal} $</strong></p>` : `
+            <p><span style="text-decoration: line-through; color: gray">S/ ${p.precio} </span><br><strong style="color: orange;">S/ ${p.precioFinal} </strong></p>` : `
             <p>${p.precio} $</p>`; div.innerHTML = ` ${agotado} ${oferta}
             <img src="${p.imagen}" alt="${p.nombre}">
             <h3>${p.nombre}</h3>
             ${precioHTML}
-            <div>ID: ${childSnapshot.key} | Stock: ${p.cantidad}</div>
+            <div>ID: ${p.idProducto || "—"} | Stock: ${p.cantidad}</div>
+
             <button onclick="abrirPago()" ${p.cantidad <=0 ? 'disabled' : ''}>Comprar</button>
             <button onclick="abrirDetalle('${p.nombre}', '${p.descripcion}')">Detalles</button> `; contenedor.appendChild(div); }); });
     </script>
@@ -290,4 +291,3 @@
 </body>
 
 </html>
-
