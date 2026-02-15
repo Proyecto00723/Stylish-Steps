@@ -263,10 +263,6 @@
         function cerrarDetalle() {
             document.getElementById('modalDetalle').style.display = 'none';
         }
-
-
-
-        window.onload = mostrarProductos;
     </script>
     <!-- Firebase SDK -->
 
@@ -277,15 +273,45 @@
         contenedor = document.getElementById("vistaProductos"); contenedor.innerHTML = ""; snapshot.forEach((childSnapshot) => { const p = childSnapshot.val(); const div = document.createElement("div"); div.className = "producto"; const agotado = p.cantidad
         <=0 ? `<div class="agotado">NO DISPONIBLE</div>` : ""; const oferta = p.descuento > 0 ? `
             <div class="etiqueta-oferta">${p.descuento}% OFF</div>` : ""; const precioHTML = p.descuento > 0 ? `
-            <p><span style="text-decoration: line-through; color: gray">S/ ${p.precio} </span><br><strong style="color: orange;">S/ ${p.precioFinal} </strong></p>` : `
-            <p>${p.precio} $</p>`; div.innerHTML = ` ${agotado} ${oferta}
+            <p>
+                <span style="text-decoration: line-through; color: gray">
+                    S/ ${p.precio}
+                </span><br>
+                <strong style="color: orange;">
+                    S/ ${p.precioFinal}
+                </strong>
+            </p>` : `
+            <p>S/ ${p.precio}</p>`; const coloresHTML = p.colores ? p.colores.map(c => `
+            <span style="
+            width:20px;
+            height:20px;
+            border-radius:50%;
+            background:${c.nombre};
+            display:inline-block;
+            margin:3px;
+            opacity:${c.activo ? '1' : '0.3'};
+            border:${c.activo ? 'none' : '2px solid red'};
+        "></span> `).join("") : ""; const tallasHTML = p.tallas ? p.tallas.map(t => `
+            <span style="
+            background:${t.activo ? '#444' : '#999'};
+            color:white;
+            padding:4px 8px;
+            margin:3px;
+            border-radius:4px;
+            display:inline-block;
+            text-decoration:${t.activo ? 'none' : 'line-through'};
+        ">
+            ${t.nombre}
+        </span> `).join("") : ""; div.innerHTML = ` ${agotado} ${oferta}
             <img src="${p.imagen}" alt="${p.nombre}">
             <h3>${p.nombre}</h3>
             ${precioHTML}
             <div>ID: ${p.idProducto || "—"} | Stock: ${p.cantidad}</div>
-
+            <div><strong>Color:</strong><br>${coloresHTML}</div>
+            <div><strong>Tallas:</strong><br>${tallasHTML}</div>
             <button onclick="abrirPago()" ${p.cantidad <=0 ? 'disabled' : ''}>Comprar</button>
             <button onclick="abrirDetalle('${p.nombre}', '${p.descripcion}')">Detalles</button> `; contenedor.appendChild(div); }); });
+
     </script>
     <script type="module" src="app.js"></script>
 </body>
