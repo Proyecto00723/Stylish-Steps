@@ -175,8 +175,20 @@
         <input type="number" id="precio" placeholder="Precio (S/)" />
         <input type="number" id="cantidad" placeholder="Cantidad disponible" />
         <input type="number" id="descuento" placeholder="Descuento (%)" min="0" max="100" />
+        <div>
+            <label>Colores (máx 9)</label>
+            <div id="contenedorColores"></div>
+            <input type="text" id="inputColor" placeholder="Ej: 8AE2F2">
+            <button type="button" onclick="agregarColor()">+</button>
+        </div>
+        <div>
+            <label>Tallas (máx 7)</label>
+            <div id="contenedorTallas"></div>
+            <input type="number" id="inputTalla" placeholder="Ej: 37">
+            <button type="button" onclick="agregarTalla()">+</button>
+        </div>
         <button onclick="agregarProducto()">Registrar Producto</button>
-        <button onclick="location.href='index.html'">🌐 Ver Tienda</button>
+        <button onclick="location.href='tienda.html'">🌐 Ver Tienda</button>
     </div>
 
     <div class="main">
@@ -205,21 +217,33 @@
         = document.getElementById('nombre').value.trim(); const imagen = document.getElementById('imagen').value.trim(); const descripcion = document.getElementById('descripcion').value.trim(); const precio = parseFloat(document.getElementById('precio').value);
         const cantidad = parseInt(document.getElementById('cantidad').value); const descuento = parseFloat(document.getElementById('descuento').value) || 0; if (!nombre || !imagen || !descripcion || !precio || !cantidad) { alert('Completa todos los campos.');
         return; } const precioFinal = parseFloat((precio - (precio * (descuento / 100))).toFixed(2)); const productosRef = ref(database, "productos"); const idProducto = Math.floor(100000 + Math.random() * 900000); push(productosRef, { idProducto, nombre,
-        imagen, descripcion, precio, cantidad, stockMaximo: cantidad, descuento, precioFinal }); alert("✅ Producto guardado correctamente"); }; const productosRef = ref(database, "productos"); onValue(productosRef, (snapshot) => { const contenedor = document.getElementById("listaProductosAdmin");
-        contenedor.innerHTML = ""; snapshot.forEach((childSnapshot)=> { const p = childSnapshot.val(); const key = childSnapshot.key; const div = document.createElement("div"); div.className = "producto"; div.setAttribute("data-id", p.idProducto); div.setAttribute("data-nombre",
-        p.nombre.toLowerCase()); const precioHTML = p.descuento > 0 ? `
-        <p>
-            <span style="text-decoration:line-through;color:#ff4d4d">
-                    Precio: S/ ${p.precio} 
-                </span><br>
-            <span style="color:orange;font-weight:bold">
-                    Ahora: S/ ${p.precioFinal} 
-                </span>
-        </p>
-        ` : `
-        <p>Precio: ${p.precioFinal} S/</p>`; div.innerHTML = ` ${p.descuento > 0 ? `
-        <div class="etiqueta-oferta">En oferta</div>` : ""}
-
+        imagen, descripcion, precio, cantidad, descuento, precioFinal, stockMaximo: cantidad, colores: colores.map(c => ({ nombre: c, activo: true })), tallas: tallas.map(t => ({ nombre: t, activo: true })) }); colores = []; tallas = []; renderColores();
+        renderTallas(); alert("✅ Producto guardado correctamente"); }; const productosRef = ref(database, "productos"); onValue(productosRef, (snapshot) => { const contenedor = document.getElementById("listaProductosAdmin"); contenedor.innerHTML = "";
+        snapshot.forEach((childSnapshot) => { const p = childSnapshot.val(); const key = childSnapshot.key; const tallasAdmin = p.tallas ? p.tallas.map((t, index) => `
+        <span onclick="toggleTalla('${key}', ${index})" style="
+                        padding:5px 10px;
+                        margin:4px;
+                        border-radius:5px;
+                        display:inline-block;
+                        cursor:pointer;
+                        background:${t.activo ? '#2e7d32' : '#777'};
+                        color:white;
+                        text-decoration:${t.activo ? 'none' : 'line-through'};
+                    ">
+                    ${t.nombre}
+                </span> `).join("") : ""; const coloresAdmin = p.colores ? p.colores.map((c, index) => `
+        <span onclick="toggleColor('${key}', ${index})" style="
+                        width:25px;
+                        height:25px;
+                        border-radius:50%;
+                        display:inline-block;
+                        margin:4px;
+                        cursor:pointer;
+                        background:${c.nombre};
+                        opacity:${c.activo ? '1' : '0.3'};
+                        border:${c.activo ? 'none' : '3px solid red'};
+                    ">
+                </span> `).join("") : ""; const div = document.createElement("div"); div.className = "producto"; div.innerHTML = `
         <button class="btn-eliminar" onclick="eliminarProducto('${key}')">🗑</button>
 
         <img src="${p.imagen}">
@@ -227,9 +251,12 @@
         <div class="producto-content">
             <h3>${p.nombre}</h3>
             <p>${p.descripcion}</p>
-            ${precioHTML}
+            <p>Precio: S/ ${p.precioFinal}</p>
             <p>Stock: ${p.cantidad}</p>
             <p style="font-size:12px;color:#aaa;">ID: ${p.idProducto}</p>
+
+            <div><strong>Colores:</strong><br>${coloresAdmin}</div>
+            <div><strong>Tallas:</strong><br>${tallasAdmin}</div>
 
             <div style="margin-top:10px;">
                 <button class="vender-btn" onclick="registrarVenta('${key}', ${p.cantidad})">
@@ -246,9 +273,37 @@
         <=0 ){ alert( "No hay stock disponible"); return; } update(ref(database, "productos/" + key), { cantidad: cantidadActual - 1 }); }; window.reembolsar=function(key, cantidadActual, stockMaximo) { if(cantidadActual>= stockMaximo){ alert("Stock ya completo"); return; } update(ref(database, "productos/" + key), { cantidad: cantidadActual + 1 }); }; window.filtrarProductos = function() { const texto = document.getElementById("buscador").value.toLowerCase();
             const productos = document.querySelectorAll(".producto"); productos.forEach(prod => { const id = (prod.getAttribute("data-id") || "").toString().toLowerCase(); const nombre = prod.getAttribute("data-nombre"); if(id.includes(texto) || nombre.includes(texto)){
             prod.style.display = "flex"; } else { prod.style.display = "none"; } }); }; window.toggleClearBtn = function() { const input = document.getElementById("buscador"); const btn = document.getElementById("clearBtn"); btn.style.display = input.value
-            ? "block" : "none"; }; window.limpiarBuscador = function() { document.getElementById("buscador").value = ""; filtrarProductos(); toggleClearBtn(); };
+            ? "block" : "none"; }; window.limpiarBuscador = function() { document.getElementById("buscador").value = ""; filtrarProductos(); toggleClearBtn(); }; let colores = []; let tallas = []; window.agregarColor = function() { const input = document.getElementById("inputColor");
+            let valor = input.value.trim(); if (!valor) return; if (colores.length >= 9) { alert("Máximo 9 colores"); return; } if (!valor.startsWith("#")) { valor = "#" + valor; } colores.push(valor); input.value = ""; renderColores(); }; function renderColores()
+            { const cont = document.getElementById("contenedorColores"); cont.innerHTML = ""; colores.forEach((color, index) => { cont.innerHTML += `
+            <div style="
+                width:25px;
+                height:25px;
+                border-radius:50%;
+                background:${color};
+                display:inline-block;
+                margin:4px;
+                cursor:pointer;
+            " onclick="eliminarColor(${index})"></div>
+            `; }); } window.eliminarColor = function(index){ colores.splice(index,1); renderColores(); }; window.agregarTalla = function() { const input = document.getElementById("inputTalla"); const valor = input.value.trim(); if (!valor) return; if (tallas.length
+            >= 7) { alert("Máximo 7 tallas"); return; } tallas.push(valor); input.value = ""; renderTallas(); }; function renderTallas() { const cont = document.getElementById("contenedorTallas"); cont.innerHTML = ""; tallas.forEach((talla, index) =>
+            { cont.innerHTML += `
+            <span style="
+                background:#333;
+                padding:5px 10px;
+                margin:4px;
+                border-radius:5px;
+                display:inline-block;
+                cursor:pointer;
+            " onclick="eliminarTalla(${index})">
+                ${talla}
+            </span> `; }); } window.eliminarTalla = function(index){ tallas.splice(index,1); renderTallas(); }; window.toggleTalla = function(productKey, index) { const productoRef = ref(database, "productos/" + productKey); onValue(productoRef,
+            (snapshot) => { const producto = snapshot.val(); producto.tallas[index].activo = !producto.tallas[index].activo; update(productoRef, { tallas: producto.tallas }); }, { onlyOnce: true }); }; window.toggleColor = function(productKey, index)
+            { const productoRef = ref(database, "productos/" + productKey); onValue(productoRef, (snapshot) => { const producto = snapshot.val(); producto.colores[index].activo = !producto.colores[index].activo; update(productoRef, { colores: producto.colores
+            }); }, { onlyOnce: true }); };
+
+
     </script>
 </body>
 
 </html>
-
